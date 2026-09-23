@@ -30,4 +30,4 @@ jobs:
             exit 1
           fi
       - name: Test game systems and regions
-        run: ./godot --headless --path . --script res://tests/integration/test_m1.gd
+        run: ./godot --headless --path . res://tests/integration/test_m1.tscn

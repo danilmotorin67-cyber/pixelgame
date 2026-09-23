@@ -1,11 +1,11 @@
-extends SceneTree
+extends Node
 
-# Run with: godot --headless --path . --script res://tests/integration/test_m1.gd
+# Run with: godot --headless --path . res://tests/integration/test_m1.tscn
 const TEST_SAVE_ROOT := "user://saltlight_m1_test_saves"
 var failures: Array[String] = []
 
 
-func _initialize() -> void:
+func _ready() -> void:
 	call_deferred("_run")
 
 
@@ -16,6 +16,7 @@ func _check(condition: bool, message: String) -> void:
 
 
 func _run() -> void:
+	var tree := get_tree()
 	Save.save_root = TEST_SAVE_ROOT
 	Save.current_slot = 2
 	Game.reset()
@@ -23,9 +24,9 @@ func _run() -> void:
 	Clock.reset()
 	Weather.start_day(0)
 	var cape: Node2D = load("res://scenes/world/cape.tscn").instantiate()
-	root.add_child(cape)
-	current_scene = cape
-	await process_frame
+	tree.root.add_child(cape)
+	tree.current_scene = cape
+	await tree.process_frame
 	TranslationServer.set_locale("ru")
 	_check(TranslationServer.translate("game.title") == "Солёный свет", "Russian CSV translation is unavailable")
 	TranslationServer.set_locale("en")
@@ -51,11 +52,11 @@ func _run() -> void:
 			low = level
 			low_minute = at_minute
 	Clock.set_time(int(high_minute / 60), high_minute % 60)
-	await process_frame
+	await tree.process_frame
 	var first_shore_tile: CollisionShape2D = cape.get_node("TideShore/TideCollision").get_child(0)
 	_check(not first_shore_tile.disabled, "high tide must block shore tile")
 	Clock.set_time(int(low_minute / 60), low_minute % 60)
-	await process_frame
+	await tree.process_frame
 	_check(first_shore_tile.disabled, "low tide must unblock shore tile")
 	_check(Weather.weather_for_day(0) == "clear" and Weather.weather_for_day(2) == "clear",
 		"first three days must be clear")
@@ -88,31 +89,31 @@ func _run() -> void:
 	broken.close()
 	_check(Save.load_game(2) and not Game.flag("backup"), "backup recovery failed")
 	_check(Router.goto_map("village", Vector2(1224, 488)), "cape to village failed")
-	await process_frame
-	_check(current_scene.get("map_id") == "village", "village scene did not load")
-	_check(current_scene.get_node("Terrain/To_cape") is RegionExit,
+	await tree.process_frame
+	_check(tree.current_scene.get("map_id") == "village", "village scene did not load")
+	_check(tree.current_scene.get_node("Terrain/To_cape") is RegionExit,
 		"village return portal is missing")
-	_check(current_scene.get_node("Player").global_position == Vector2(1224, 488),
+	_check(tree.current_scene.get_node("Player").global_position == Vector2(1224, 488),
 		"player arrived at wrong village entrance")
 	_check(Router.goto_map("moor", Vector2(568, 904)), "village to moor failed")
-	await process_frame
-	_check(current_scene.get("map_id") == "moor", "moor scene did not load")
-	current_scene.get_node("Terrain/To_bird_cliffs").interact(current_scene.get_node("Player"))
+	await tree.process_frame
+	_check(tree.current_scene.get("map_id") == "moor", "moor scene did not load")
+	tree.current_scene.get_node("Terrain/To_bird_cliffs").interact(tree.current_scene.get_node("Player"))
 	_check(Router.current_map == "moor", "cliffs must be gated before the festival")
 	for region_id in ["birch", "seal_shore", "wreck_bay", "bird_cliffs", "lagoon"]:
 		_check(Router.goto_map(region_id), "cannot route to " + region_id)
-		await process_frame
-		_check(current_scene.get("map_id") == region_id, "wrong region: " + region_id)
-		_check(current_scene.get_node("Terrain").width > 0, "region failed to build: " + region_id)
+		await tree.process_frame
+		_check(tree.current_scene.get("map_id") == region_id, "wrong region: " + region_id)
+		_check(tree.current_scene.get_node("Terrain").width > 0, "region failed to build: " + region_id)
 		if region_id == "seal_shore":
-			current_scene.get_node("Terrain/To_wreck_bay").interact(current_scene.get_node("Player"))
+			tree.current_scene.get_node("Terrain/To_wreck_bay").interact(tree.current_scene.get_node("Player"))
 			_check(Router.current_map == "seal_shore", "bay must open on Spring 5")
 	Clock.set_time(1, 50)
 	Clock.paused = false
 	var previous_day := Clock.day_index
 	Clock.advance(10)
-	await process_frame
-	var morning_scene := current_scene
+	await tree.process_frame
+	var morning_scene := tree.current_scene
 	_check(Clock.day_index == previous_day + 1 and Clock.minutes == 360,
 		"fainting must start next day at 06:00")
 	_check(morning_scene.get("map_id") == "cape", "morning must return to cape")
@@ -127,4 +128,4 @@ func _run() -> void:
 	Save.save_root = "user://saves"
 	Save.current_slot = 0
 	print("M1 integration: %d failure(s)" % failures.size())
-	quit(1 if not failures.is_empty() else 0)
+	tree.quit(1 if not failures.is_empty() else 0)
