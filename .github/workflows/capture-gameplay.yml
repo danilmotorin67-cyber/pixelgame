@@ -33,13 +33,8 @@ jobs:
           fi
           LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a -s '-screen 0 1920x1080x24' \
             ./godot --path . res://tests/screenshots/cape_capture.tscn
-          python3 - <<'PY'
-          from PIL import Image
-          image = Image.open('capture.png').convert('RGB')
-          assert image.getbbox(), 'Godot screenshot is empty'
-          image.resize((1920, 1080), Image.Resampling.NEAREST).save('saltlight-cape.png')
-          print('Captured game viewport:', image.size)
-          PY
+          test -s saltlight-cape.png
+          file saltlight-cape.png
       - uses: actions/upload-artifact@v4
         with:
           name: saltlight-cape

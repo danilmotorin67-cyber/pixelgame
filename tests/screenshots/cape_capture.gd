@@ -45,7 +45,9 @@ func _capture() -> void:
 		push_error("Godot did not render the screenshot")
 		get_tree().quit(1)
 		return
-	var error := screenshot.save_png("res://capture.png")
+	if screenshot.get_width() < 1920:
+		screenshot.resize(1920, 1080, Image.INTERPOLATE_NEAREST)
+	var error := screenshot.save_png("res://saltlight-cape.png")
 	if error != OK:
 		push_error("Could not save game screenshot: %d" % error)
 	get_tree().quit(0 if error == OK else 1)
