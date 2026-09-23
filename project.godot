@@ -136,7 +136,6 @@ debug_console={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://localization/strings.ru.translation", "res://localization/strings.en.translation")
 locale/fallback="ru"
 
 [layer_names]

@@ -26,6 +26,11 @@ func _run() -> void:
 	root.add_child(cape)
 	current_scene = cape
 	await process_frame
+	TranslationServer.set_locale("ru")
+	_check(TranslationServer.translate("game.title") == "Солёный свет", "Russian CSV translation is unavailable")
+	TranslationServer.set_locale("en")
+	_check(TranslationServer.translate("game.title") == "Saltlight", "English CSV translation is unavailable")
+	TranslationServer.set_locale("ru")
 
 	_check(is_equal_approx(Clock.tide_amplitude(0), 1.4), "spring tide amplitude")
 	_check(is_equal_approx(Clock.tide_amplitude(7), 0.6), "neap tide amplitude")
