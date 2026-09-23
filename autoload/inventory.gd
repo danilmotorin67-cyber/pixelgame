@@ -5,6 +5,10 @@ const MAX_SLOTS := 36
 const HOTBAR := 12
 
 func _ready() -> void:
+	reset()
+
+
+func reset() -> void:
 	slots.clear()
 	for i in MAX_SLOTS:
 		slots.append({"id": "", "count": 0, "quality": 0, "meta": {}})

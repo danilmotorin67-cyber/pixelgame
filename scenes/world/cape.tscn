@@ -1,10 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://cape001"]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/cape.gd" id="1_cape"]
-[ext_resource type="PackedScene" uid="uid://player001" path="res://scenes/actors/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/actors/player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/world/tide_shore.gd" id="3_shore"]
+[ext_resource type="Script" path="res://scripts/world/daylight.gd" id="4_daylight"]
+[ext_resource type="Script" path="res://scripts/world/weather_fx.gd" id="5_weather"]
+[ext_resource type="Script" path="res://scripts/objects/bed.gd" id="6_bed"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(1440, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_deep"]
+size = Vector2(1440, 160)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bed"]
+size = Vector2(28, 18)
 
 [node name="Cape" type="Node2D"]
 script = ExtResource("1_cape")
@@ -24,10 +34,13 @@ color = Color(0.305882, 0.431373, 0.227451, 1)
 
 [node name="Sea" type="ColorRect" parent="."]
 offset_left = 0.0
-offset_top = 900.0
+offset_top = 960.0
 offset_right = 1440.0
 offset_bottom = 1120.0
 color = Color(0.141176, 0.25098, 0.352941, 1)
+
+[node name="TideShore" type="Node2D" parent="."]
+script = ExtResource("3_shore")
 
 [node name="Lighthouse" type="ColorRect" parent="."]
 offset_left = 700.0
@@ -50,6 +63,22 @@ offset_right = 640.0
 offset_bottom = 336.0
 color = Color(0.419608, 0.290196, 0.2, 1)
 
+[node name="Bed" type="Area2D" parent="."]
+position = Vector2(600, 313)
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("6_bed")
+
+[node name="Blanket" type="ColorRect" parent="Bed"]
+offset_left = -14.0
+offset_top = -9.0
+offset_right = 14.0
+offset_bottom = 9.0
+color = Color(0.509804, 0.639216, 0.611765, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bed"]
+shape = SubResource("RectangleShape2D_bed")
+
 [node name="WorldBounds" type="StaticBody2D" parent="."]
 collision_layer = 1
 
@@ -57,8 +86,18 @@ collision_layer = 1
 position = Vector2(720, 8)
 shape = SubResource("RectangleShape2D_wall")
 
+[node name="DeepSea" type="CollisionShape2D" parent="WorldBounds"]
+position = Vector2(720, 1040)
+shape = SubResource("RectangleShape2D_deep")
+
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector2(600, 360)
+
+[node name="Daylight" type="CanvasModulate" parent="."]
+script = ExtResource("4_daylight")
+
+[node name="WeatherFX" type="Node2D" parent="."]
+script = ExtResource("5_weather")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 
@@ -77,6 +116,29 @@ theme_override_font_sizes/font_size = 11
 text = "Пн, Весна 1  17:00"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="TidePanel" type="Panel" parent="HUD"]
+offset_left = 300.0
+offset_top = 30.0
+offset_right = 476.0
+offset_bottom = 51.0
+
+[node name="TideLabel" type="Label" parent="HUD/TidePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WeatherLabel" type="Label" parent="HUD"]
+offset_left = 300.0
+offset_top = 52.0
+offset_right = 476.0
+offset_bottom = 69.0
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
 
 [node name="Compass" type="Panel" parent="HUD"]
 offset_left = 4.0
@@ -100,7 +162,31 @@ offset_right = 300.0
 offset_bottom = 266.0
 theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.87451, 0.913725, 0.917647, 1)
-text = "WASD двигаться  ~ консоль  Esc пауза"
+text = "WASD ходить  E спать у дома  Esc пауза"
+
+[node name="MorningPanel" type="Panel" parent="HUD"]
+visible = false
+offset_left = 80.0
+offset_top = 65.0
+offset_right = 400.0
+offset_bottom = 185.0
+
+[node name="MorningText" type="Label" parent="HUD/MorningPanel"]
+offset_left = 14.0
+offset_top = 14.0
+offset_right = 306.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 12
+text = "Ночной отчёт смотрителя"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MorningOk" type="Button" parent="HUD/MorningPanel"]
+offset_left = 114.0
+offset_top = 83.0
+offset_right = 206.0
+offset_bottom = 109.0
+text = "Начать день"
 
 [node name="Console" type="LineEdit" parent="HUD"]
 visible = false
@@ -120,3 +206,4 @@ theme_override_font_sizes/font_size = 10
 text = ""
 
 [connection signal="text_submitted" from="HUD/Console" to="." method="_on_console_submitted"]
+[connection signal="pressed" from="HUD/MorningPanel/MorningOk" to="." method="_on_morning_ok"]

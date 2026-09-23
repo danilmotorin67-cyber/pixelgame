@@ -6,19 +6,26 @@ class_name Player
 @export var dodge_speed: float = 140.0
 
 var facing: Vector2 = Vector2.DOWN
-var energy: float = 100.0
+var energy: float = 270.0
 var health: float = 100.0
 var cold: float = 0.0
 var lantern_on: bool = false
 var _dodge_t: float = 0.0
+var _walk_time: float = 0.0
 
-@onready var sprite: ColorRect = $Body
+@onready var sprite: Sprite2D = $Body
+
+
+func _ready() -> void:
+	if Game.player_state.is_empty():
+		global_position = Router.spawn
+	else:
+		restore_state(Game.player_state)
 
 
 func _physics_process(delta: float) -> void:
-	if Cutscenes.playing:
+	if Cutscenes.playing or Clock.paused:
 		velocity = Vector2.ZERO
-		move_and_slide()
 		return
 	if _dodge_t > 0.0:
 		_dodge_t -= delta
@@ -30,10 +37,17 @@ func _physics_process(delta: float) -> void:
 	var spd := slow_speed if Input.is_action_pressed("walk_slow") else walk_speed
 	velocity = dir * spd
 	move_and_slide()
+	if dir.length() > 0.1:
+		_walk_time += delta
+		sprite.frame = int(_walk_time * 5.0) % 2
+	else:
+		sprite.frame = 0
 	_tint()
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Clock.paused:
+		return
 	if event.is_action_pressed("dodge") and _dodge_t <= 0.0:
 		_dodge_t = 0.18
 		velocity = facing * dodge_speed
@@ -58,4 +72,21 @@ func _try_interact() -> void:
 
 func _tint() -> void:
 	if sprite:
-		sprite.color = Color(0.94, 0.72, 0.58) if not lantern_on else Color(1.0, 0.86, 0.55)
+		sprite.modulate = Color.WHITE if not lantern_on else Color(1.0, 0.92, 0.73)
+
+
+func serialize_state() -> Dictionary:
+	return {"x": global_position.x, "y": global_position.y,
+		"energy": energy, "health": health, "cold": cold,
+		"lantern_on": lantern_on, "face_x": facing.x, "face_y": facing.y}
+
+
+func restore_state(state: Dictionary) -> void:
+	global_position = Vector2(float(state.get("x", 600)), float(state.get("y", 360)))
+	energy = float(state.get("energy", 270.0))
+	health = float(state.get("health", 100.0))
+	cold = float(state.get("cold", 0.0))
+	lantern_on = bool(state.get("lantern_on", false))
+	facing = Vector2(float(state.get("face_x", 0)), float(state.get("face_y", 1)))
+	velocity = Vector2.ZERO
+	_tint()

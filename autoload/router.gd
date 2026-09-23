@@ -1,7 +1,16 @@
 extends Node
 
 var current_map: String = ""
-var spawn: Vector2 = Vector2(48, 48)
+var spawn: Vector2 = Vector2(600, 360)
+
+
+func serialize() -> Dictionary:
+	return {"current_map": current_map, "spawn_x": spawn.x, "spawn_y": spawn.y}
+
+
+func deserialize(d: Dictionary) -> void:
+	current_map = str(d.get("current_map", "cape"))
+	spawn = Vector2(float(d.get("spawn_x", 600)), float(d.get("spawn_y", 360)))
 
 func goto_map(id: String, pos: Vector2 = Vector2.ZERO) -> void:
 	current_map = id

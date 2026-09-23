@@ -19,10 +19,12 @@ var hero: Dictionary = {
 }
 var world_seed: int = 1
 var playtime_sec: float = 0.0
+var player_state: Dictionary = {}
 
 
 func _process(delta: float) -> void:
-	playtime_sec += delta
+	if not Clock.paused:
+		playtime_sec += delta
 
 
 func flag(id: String) -> bool:
@@ -45,11 +47,26 @@ func add_honor(n: int) -> void:
 	honor = clampi(honor + n, -100, 100)
 
 
+func reset() -> void:
+	flags.clear()
+	counters.clear()
+	stats.clear()
+	act = 0
+	honor = 0
+	hero = {"name": "Смотритель", "gender": "m", "love": "",
+		"skin": 1, "hair": 0, "hair_color": 0, "eyes": 0,
+		"shirt": 0, "pants": 0, "shoes": 0}
+	world_seed = randi()
+	playtime_sec = 0.0
+	player_state = {}
+
+
 func serialize() -> Dictionary:
 	return {
 		"flags": flags, "counters": counters, "stats": stats,
 		"act": act, "honor": honor, "hero": hero,
 		"world_seed": world_seed, "playtime_sec": playtime_sec,
+		"player_state": player_state,
 	}
 
 
@@ -62,3 +79,4 @@ func deserialize(d: Dictionary) -> void:
 	hero = d.get("hero", hero)
 	world_seed = int(d.get("world_seed", 1))
 	playtime_sec = float(d.get("playtime_sec", 0.0))
+	player_state = d.get("player_state", {}).duplicate(true)

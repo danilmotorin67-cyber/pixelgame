@@ -1,0 +1,101 @@
+extends SceneTree
+
+# Run with: godot --headless --path . --script res://tests/integration/test_m1.gd
+const TEST_SAVE_ROOT := "user://saltlight_m1_test_saves"
+var failures: Array[String] = []
+
+
+func _initialize() -> void:
+	call_deferred("_run")
+
+
+func _check(condition: bool, message: String) -> void:
+	if not condition:
+		failures.append(message)
+		push_error(message)
+
+
+func _run() -> void:
+	Save.save_root = TEST_SAVE_ROOT
+	Save.current_slot = 2
+	Game.reset()
+	Game.world_seed = 42
+	Clock.reset()
+	Weather.start_day(0)
+	var cape := load("res://scenes/world/cape.tscn").instantiate()
+	root.add_child(cape)
+	current_scene = cape
+	await process_frame
+
+	_check(is_equal_approx(Clock.tide_amplitude(0), 1.4), "spring tide amplitude")
+	_check(is_equal_approx(Clock.tide_amplitude(7), 0.6), "neap tide amplitude")
+	Clock.day_index = 14
+	Clock.set_time(12, 40)
+	_check(Clock.tide_height() < -1.39, "Spring 15 story low tide")
+	Clock.day_index = 0
+	var high_minute := 0
+	var low_minute := 0
+	var high := -10.0
+	var low := 10.0
+	for at_minute in range(0, 1440, 10):
+		var level := Clock.tide_height_at(0, at_minute)
+		if level > high:
+			high = level
+			high_minute = at_minute
+		if level < low:
+			low = level
+			low_minute = at_minute
+	Clock.set_time(int(high_minute / 60), high_minute % 60)
+	await process_frame
+	var first_shore_tile: CollisionShape2D = cape.get_node("TideShore/TideCollision").get_child(0)
+	_check(not first_shore_tile.disabled, "high tide must block shore tile")
+	Clock.set_time(int(low_minute / 60), low_minute % 60)
+	await process_frame
+	_check(first_shore_tile.disabled, "low tide must unblock shore tile")
+	_check(Weather.weather_for_day(0) == "clear" and Weather.weather_for_day(2) == "clear",
+		"first three days must be clear")
+
+	Game.set_flag("m1_roundtrip", true)
+	Economy.money = 731
+	var player: Player = cape.get_node("Player")
+	player.global_position = Vector2(612, 401)
+	Clock.set_time(19, 40)
+	_check(Save.save_game(2), "save failed")
+	var expected_game := JSON.stringify(Game.serialize())
+	var expected_clock := JSON.stringify(Clock.serialize())
+	var expected_weather := JSON.stringify(Weather.serialize())
+	var expected_inventory := JSON.stringify(Inventory.serialize())
+	Game.set_flag("m1_roundtrip", false)
+	Economy.money = 1
+	Clock.set_time(8, 0)
+	Weather.set_weather("storm")
+	_check(Save.load_game(2), "load failed")
+	_check(JSON.stringify(Game.serialize()) == expected_game, "game/player state changed after load")
+	_check(JSON.stringify(Clock.serialize()) == expected_clock, "clock changed after load")
+	_check(JSON.stringify(Weather.serialize()) == expected_weather, "weather changed after load")
+	_check(JSON.stringify(Inventory.serialize()) == expected_inventory, "inventory changed after load")
+	_check(Economy.money == 731, "money changed after load")
+
+	Game.set_flag("backup", true)
+	_check(Save.save_game(2), "second save failed")
+	var broken := FileAccess.open(Save._slot_path(2), FileAccess.WRITE)
+	broken.store_string("{broken")
+	broken.close()
+	_check(Save.load_game(2) and not Game.flag("backup"), "backup recovery failed")
+	Clock.set_time(1, 50)
+	Clock.paused = false
+	var previous_day := Clock.day_index
+	Clock.advance(10)
+	_check(Clock.day_index == previous_day + 1 and Clock.minutes == 360,
+		"fainting must start next day at 06:00")
+	_check(is_equal_approx(player.energy, 135.0), "fainting must restore half energy")
+	_check(Save.has_save(2), "night must create a save")
+	_check(cape.get_node("HUD/MorningPanel").visible, "night report must be shown")
+
+	for file_path in Save._candidate_paths(2):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(file_path))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(Save._slot_path(2) + ".tmp"))
+	Save.save_root = "user://saves"
+	Save.current_slot = 0
+	print("M1 integration: %d failure(s)" % failures.size())
+	quit(1 if not failures.is_empty() else 0)
