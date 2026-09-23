@@ -53,6 +53,8 @@ func _capture() -> void:
 	var player: Player = cape.get_node("Player")
 	player.global_position = Vector2(658, 318)
 	player.play_tool("can", Vector2(681, 318))
+	player.tool_time = Player.TOOL_DURATION * 0.45
+	player.tool_art.queue_redraw()
 	for frame in 40:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw
