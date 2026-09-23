@@ -68,49 +68,54 @@ func _draw() -> void:
 		for column in range(COLUMNS):
 			var sx := column * TILE
 			var sy := 960 + row * TILE
-			if (column * 7 + row * 11) % 4 == 0:
-				_px(sx + 1, sy + 3, 14, 6, WATER)
-			if (column * 13 + row * 5 + _wave_frame) % 7 == 0:
-				_px(sx + 4, sy + 5, 9, 1, WAVE)
-				_px(sx + 7, sy + 6, 4, 1, SHALLOW)
+			var current := (column * 73 + row * 131 + column * row * 17) % 101
+			if current % 11 == 0:
+				_px(sx + 2, sy + 3, 18 + current % 11, 2, WATER)
+			if (current + _wave_frame) % 17 == 0:
+				_px(sx + 4, sy + 7, 9 + current % 7, 1, WAVE)
+				_px(sx + 8, sy + 8, 4, 1, SHALLOW)
 
 	for cell in _cells:
 		var x: int = cell["x"]
 		var y: int = cell["y"]
 		var column := x / TILE
 		var row := (y / TILE) - FIRST_ROW
-		var seed: int = column * 17 + row * 31
+		var seed: int = (column * 73 + row * 131 + column * row * 17) % 997
 		if cell["flooded"]:
 			_px(x, y, TILE, TILE, WATER)
-			_px(x + 1, y + 10, 13, 4, WAVE)
-			_px(x + 4, y + 11, 7, 1, SHALLOW)
-			if (seed + _wave_frame) % 3 == 0:
-				_px(x + 2, y + 5, 9, 1, SHALLOW)
-				_px(x + 5, y + 6, 5, 1, FOAM)
+			if seed % 8 == 0:
+				_px(x + 2, y + 9, 9 + seed % 5, 2, WAVE)
+			if (seed + _wave_frame) % 15 == 0:
+				_px(x + 3, y + 5, 8, 1, SHALLOW)
+				_px(x + 6, y + 6, 3, 1, FOAM)
 			if row == 0 or not _cells[(row - 1) * COLUMNS + column]["flooded"]:
 				_foam_edge(x, y, seed)
 		else:
 			var wet: bool = cell["wet"]
 			_px(x, y, TILE, TILE, WET_SAND if wet else DRY_SAND)
-			_px(x + 1, y + 2, 8, 1, Color("#b08f6c") if wet else Color("#eadcb8"))
-			_px(x + 8, y + 7, 7, 1, Color("#6b4a33") if wet else WET_SAND)
-			if seed % 3 == 0:
+			if seed % 5 == 0:
+				_px(x + 1 + seed % 4, y + 2 + seed % 5, 7, 1,
+					Color("#b08f6c") if wet else Color("#eadcb8"))
+			if seed % 7 == 2:
+				_px(x + 8, y + 7 + seed % 3, 6, 1, Color("#6b4a33") if wet else WET_SAND)
+			if seed % 13 == 0:
 				_px(x + 3, y + 11, 4, 2, Color("#6c6e76"))
 				_px(x + 3, y + 10, 2, 1, Color("#c9c8c2"))
-			if row >= 3 and not wet and seed % 5 == 0:
+			if row >= 3 and not wet and seed % 17 == 0:
 				_px(x + 3, y + 6, 9, 5, WAVE)
 				_px(x + 5, y + 7, 4, 1, SHALLOW)
 			if row == ROWS - 1:
 				_foam_edge(x, y + 14, seed)
 
 	# A broken basalt lip separates the grass from the exposed shore.
+	_px(0, 860, 1440, 4, Color("#45464e"))
 	for column in COLUMNS:
 		var x := column * TILE
-		var seed := (column * 17) % 11
-		_px(x, 856 + seed % 3, 16, 4, Color("#45464e"))
-		_px(x + 2, 854 + seed % 3, 9, 3, Color("#6c6e76"))
+		var seed := (column * 43 + column * column * 7) % 31
 		if seed % 4 == 0:
-			_px(x + 5, 858, 6, 3, Color("#c9c8c2"))
+			_px(x + 3, 857, 7 + seed % 6, 3, Color("#6c6e76"))
+		if seed % 9 == 0:
+			_px(x + 5, 856, 4, 2, Color("#c9c8c2"))
 
 
 func _foam_edge(x: int, y: int, seed: int) -> void:

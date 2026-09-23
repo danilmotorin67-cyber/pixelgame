@@ -52,6 +52,7 @@ func _capture() -> void:
 	# The same coast from the same camera position at spring low and high tide.
 	player.global_position = Vector2(720, 844)
 	player.tool_time = 0.0
+	player.tool_art.queue_redraw()
 	player.get_node("Camera2D").position = Vector2(0, 51)
 	Inventory.select_hotbar(0)
 	Clock.day_index = 0
