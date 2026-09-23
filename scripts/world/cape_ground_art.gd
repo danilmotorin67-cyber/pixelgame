@@ -18,8 +18,11 @@ func _draw() -> void:
 		for tx in range(5, 80):
 			var p := Vector2i(tx * 16, ty * 16)
 			var seed := (tx * 73 + ty * 137 + tx * ty * 19) % 29
-			var grass := MOSS if seed % 5 != 0 else MOSS_DARK
-			draw_rect(Rect2(p, Vector2i(16, 16)), grass)
+			draw_rect(Rect2(p, Vector2i(16, 16)), MOSS)
+			if seed % 5 == 0:
+				_px(p.x + 1, p.y + 2, 5, 2, MOSS_DARK)
+				_px(p.x + 4, p.y + 4, 4, 1, MOSS_DARK)
+				_px(p.x + 2, p.y + 10, 3, 2, MOSS_DARK)
 			if seed % 7 == 0:
 				_px(p.x + 2, p.y + 5, 5, 2, MOSS_LIGHT)
 				_px(p.x + 4, p.y + 3, 1, 4, LICHEN)

@@ -5,6 +5,9 @@ on:
     paths:
       - tests/screenshots/**
       - scenes/world/cape.tscn
+      - scenes/actors/player.tscn
+      - assets/sprites/**
+      - assets_src/sprites/**
       - scripts/world/cape_ground_art.gd
       - scripts/world/lighthouse_art.gd
       - scripts/world/house_art.gd
