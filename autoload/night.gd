@@ -1,6 +1,7 @@
 extends Node
 
 var resolving: bool = false
+var pending_report: Dictionary = {}
 
 
 func end_day(fainted: bool = false) -> void:
@@ -44,5 +45,9 @@ func end_day(fainted: bool = false) -> void:
 		"tide": Clock.tide_height(), "moon": Clock.moon_name(),
 		"money_lost": lost_money, "fainted": fainted, "saved": saved,
 	}
-	Events.night_resolved.emit(report)
+	if current_scene and current_scene.get("map_id") != "cape":
+		pending_report = report
+		Router.goto_map("cape", Vector2(600, 360))
+	else:
+		Events.night_resolved.emit(report)
 	resolving = false

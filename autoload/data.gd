@@ -9,7 +9,7 @@ const DATA_FILES: PackedStringArray = [
 	"recipes_craft", "recipes_cook", "stations", "tools", "weapons", "amulets", "clothes",
 	"enemies", "bosses", "loot_tables", "deep_biomes", "grotto", "sea_map", "ships",
 	"npcs", "gifts", "quests", "bodies", "registry", "ghosts", "the_twenty", "evidence",
-	"weather", "tides", "festivals", "bundles", "neptune",
+	"weather", "tides", "festivals", "bundles", "neptune", "regions",
 	"skills", "knowledge_tree", "achievements", "collections",
 	"bottles", "pages", "tales", "shops", "buildings", "balance"
 ]

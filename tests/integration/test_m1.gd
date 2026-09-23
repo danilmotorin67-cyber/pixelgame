@@ -82,15 +82,39 @@ func _run() -> void:
 	broken.store_string("{broken")
 	broken.close()
 	_check(Save.load_game(2) and not Game.flag("backup"), "backup recovery failed")
+	_check(Router.goto_map("village", Vector2(1224, 488)), "cape to village failed")
+	await process_frame
+	_check(current_scene.get("map_id") == "village", "village scene did not load")
+	_check(current_scene.get_node("Terrain/To_cape") is RegionExit,
+		"village return portal is missing")
+	_check(current_scene.get_node("Player").global_position == Vector2(1224, 488),
+		"player arrived at wrong village entrance")
+	_check(Router.goto_map("moor", Vector2(568, 904)), "village to moor failed")
+	await process_frame
+	_check(current_scene.get("map_id") == "moor", "moor scene did not load")
+	current_scene.get_node("Terrain/To_bird_cliffs").interact(current_scene.get_node("Player"))
+	_check(Router.current_map == "moor", "cliffs must be gated before the festival")
+	for region_id in ["birch", "seal_shore", "wreck_bay", "bird_cliffs", "lagoon"]:
+		_check(Router.goto_map(region_id), "cannot route to " + region_id)
+		await process_frame
+		_check(current_scene.get("map_id") == region_id, "wrong region: " + region_id)
+		_check(current_scene.get_node("Terrain").width > 0, "region failed to build: " + region_id)
+		if region_id == "seal_shore":
+			current_scene.get_node("Terrain/To_wreck_bay").interact(current_scene.get_node("Player"))
+			_check(Router.current_map == "seal_shore", "bay must open on Spring 5")
 	Clock.set_time(1, 50)
 	Clock.paused = false
 	var previous_day := Clock.day_index
 	Clock.advance(10)
+	await process_frame
+	var morning_scene := current_scene
 	_check(Clock.day_index == previous_day + 1 and Clock.minutes == 360,
 		"fainting must start next day at 06:00")
-	_check(is_equal_approx(player.energy, 135.0), "fainting must restore half energy")
+	_check(morning_scene.get("map_id") == "cape", "morning must return to cape")
+	_check(is_equal_approx(morning_scene.get_node("Player").energy, 135.0),
+		"fainting must restore half energy")
 	_check(Save.has_save(2), "night must create a save")
-	_check(cape.get_node("HUD/MorningPanel").visible, "night report must be shown")
+	_check(morning_scene.get_node("HUD/MorningPanel").visible, "night report must be shown")
 
 	for file_path in Save._candidate_paths(2):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(file_path))

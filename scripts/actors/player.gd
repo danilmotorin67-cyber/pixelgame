@@ -62,6 +62,7 @@ func _try_interact() -> void:
 	var to := global_position + facing * 16.0
 	var q := PhysicsRayQueryParameters2D.create(global_position, to)
 	q.collide_with_areas = true
+	q.hit_from_inside = true
 	q.collision_mask = 8
 	var hit := space.intersect_ray(q)
 	if hit:

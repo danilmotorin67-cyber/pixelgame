@@ -1,5 +1,7 @@
 extends Node2D
 
+@export var map_id: String = "cape"
+
 @onready var hud: CanvasLayer = $HUD
 @onready var time_label: Label = $HUD/TimePanel/TimeLabel
 @onready var tide_label: Label = $HUD/TidePanel/TideLabel
@@ -19,8 +21,11 @@ var _was_paused_before_console: bool = false
 
 
 func _ready() -> void:
-	Clock.paused = false
-	Events.map_entered.emit("cape")
+	if map_id == "":
+		map_id = Router.current_map
+	Router.current_map = map_id
+	Clock.paused = not Night.pending_report.is_empty()
+	Events.map_entered.emit(map_id)
 	Events.time_tick.connect(_on_world_changed)
 	Events.tide_changed.connect(_on_world_changed)
 	Events.weather_changed.connect(_on_world_changed)
@@ -29,7 +34,20 @@ func _ready() -> void:
 	console.visible = false
 	console_out.visible = false
 	morning_panel.visible = false
+	if map_id != "cape":
+		var info: Dictionary = Data.tables.get("regions", {}).get(map_id, {})
+		$HUD/Hint.text = "%s   E: переход" % str(info.get("title", map_id))
+	else:
+		$HUD/Hint.text = "WASD ходить  E: кровать  Сольвик ←"
 	_refresh_hud()
+	if not Night.pending_report.is_empty():
+		var report := Night.pending_report.duplicate(true)
+		Night.pending_report.clear()
+		call_deferred("_deliver_report", report)
+
+
+func _deliver_report(report: Dictionary) -> void:
+	Events.night_resolved.emit(report)
 
 
 func _on_world_changed(_value: Variant = null) -> void:
