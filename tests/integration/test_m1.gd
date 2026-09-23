@@ -76,6 +76,12 @@ func _run() -> void:
 	Clock.set_time(8, 0)
 	Weather.set_weather("storm")
 	_check(Save.load_game(2), "load failed")
+	if Game.serialize() != expected_game:
+		print("Game before load: ", JSON.stringify(expected_game))
+		print("Game after load: ", JSON.stringify(Game.serialize()))
+	if Inventory.serialize() != expected_inventory:
+		print("Inventory before load: ", JSON.stringify(expected_inventory))
+		print("Inventory after load: ", JSON.stringify(Inventory.serialize()))
 	_check(Game.serialize() == expected_game, "game/player state changed after load")
 	_check(JSON.stringify(Clock.serialize()) == expected_clock, "clock changed after load")
 	_check(JSON.stringify(Weather.serialize()) == expected_weather, "weather changed after load")
