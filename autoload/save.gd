@@ -31,7 +31,10 @@ func _candidate_paths(slot: int) -> Array[String]:
 func _read_payload(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	var parser := JSON.new()
+	if parser.parse(FileAccess.get_file_as_string(path)) != OK:
+		return {}
+	var parsed: Variant = parser.data
 	if not (parsed is Dictionary):
 		return {}
 	var d: Dictionary = parsed
