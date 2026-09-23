@@ -68,3 +68,6 @@ func deserialize(d: Dictionary) -> void:
 	var loaded = d.get("slots", [])
 	if loaded is Array and loaded.size() == MAX_SLOTS:
 		slots = loaded
+		for slot in slots:
+			slot["count"] = int(slot.get("count", 0))
+			slot["quality"] = int(slot.get("quality", 0))

@@ -62,6 +62,8 @@ func _run() -> void:
 		"first three days must be clear")
 
 	Game.set_flag("m1_roundtrip", true)
+	Game.add_stat("m1_test_items", 3)
+	Inventory.add("bread_rye", 3, 2)
 	Economy.money = 731
 	var player: Player = cape.get_node("Player")
 	player.global_position = Vector2(612, 401)
@@ -86,6 +88,7 @@ func _run() -> void:
 	_check(JSON.stringify(Clock.serialize()) == expected_clock, "clock changed after load")
 	_check(JSON.stringify(Weather.serialize()) == expected_weather, "weather changed after load")
 	_check(Inventory.serialize() == expected_inventory, "inventory changed after load")
+	_check(Inventory.count_of("bread_rye") == 3, "saved items were lost")
 	_check(Economy.money == 731, "money changed after load")
 
 	Game.set_flag("backup", true)

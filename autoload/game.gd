@@ -74,9 +74,16 @@ func deserialize(d: Dictionary) -> void:
 	flags = d.get("flags", {})
 	counters = d.get("counters", {})
 	stats = d.get("stats", {})
+	for key in counters:
+		counters[key] = int(counters[key])
+	for key in stats:
+		stats[key] = int(stats[key])
 	act = int(d.get("act", 0))
 	honor = int(d.get("honor", 0))
 	hero = d.get("hero", hero)
+	for key in ["skin", "hair", "hair_color", "eyes", "shirt", "pants", "shoes"]:
+		if hero.has(key):
+			hero[key] = int(hero[key])
 	world_seed = int(d.get("world_seed", 1))
 	playtime_sec = float(d.get("playtime_sec", 0.0))
 	player_state = d.get("player_state", {}).duplicate(true)
