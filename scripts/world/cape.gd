@@ -7,6 +7,9 @@ extends Node2D
 @onready var tide_label: Label = $HUD/TidePanel/TideLabel
 @onready var weather_label: Label = $HUD/WeatherLabel
 @onready var compass_label: Label = $HUD/Compass/CompassLabel
+@onready var hotbar_label: Label = $HUD/HotbarLabel
+@onready var inventory_panel: Panel = $HUD/InventoryPanel
+@onready var inventory_list: Label = $HUD/InventoryPanel/InventoryScroll/InventoryList
 @onready var console: LineEdit = $HUD/Console
 @onready var console_out: Label = $HUD/ConsoleOut
 @onready var morning_panel: Panel = $HUD/MorningPanel
@@ -18,6 +21,7 @@ const WEATHER_NAMES := {
 }
 
 var _was_paused_before_console: bool = false
+var _was_paused_before_inventory: bool = false
 
 
 func _ready() -> void:
@@ -30,16 +34,19 @@ func _ready() -> void:
 	Events.tide_changed.connect(_on_world_changed)
 	Events.weather_changed.connect(_on_world_changed)
 	Events.money_changed.connect(_on_world_changed)
+	Events.inventory_changed.connect(_refresh_inventory)
 	Events.night_resolved.connect(_on_night_resolved)
 	console.visible = false
 	console_out.visible = false
+	inventory_panel.visible = false
 	morning_panel.visible = false
 	if map_id != "cape":
 		var info: Dictionary = Data.tables.get("regions", {}).get(map_id, {})
 		$HUD/Hint.text = "%s   E: переход" % str(info.get("title", map_id))
 	else:
-		$HUD/Hint.text = "WASD ходить  E: кровать  Сольвик ←"
+		$HUD/Hint.text = "WASD: ходить  E: кровать  Tab: вещи  ЛКМ: грядка"
 	_refresh_hud()
+	_refresh_inventory()
 	if not Night.pending_report.is_empty():
 		var report := Night.pending_report.duplicate(true)
 		Night.pending_report.clear()
@@ -56,6 +63,18 @@ func _on_world_changed(_value: Variant = null) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if morning_panel.visible:
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_TAB:
+		inventory_panel.visible = not inventory_panel.visible
+		if inventory_panel.visible:
+			_was_paused_before_inventory = Clock.paused
+			Clock.paused = true
+			_refresh_inventory()
+		else:
+			Clock.paused = _was_paused_before_inventory
+		get_viewport().set_input_as_handled()
+		return
+	if inventory_panel.visible:
 		return
 	if event.is_action_pressed("debug_console"):
 		console.visible = not console.visible
@@ -121,3 +140,19 @@ func _refresh_hud() -> void:
 		int(Sea.mercy),
 		Economy.money,
 	]
+
+
+func _refresh_inventory() -> void:
+	var slot: Dictionary = Inventory.slots[Inventory.selected_hotbar]
+	var id := str(slot["id"])
+	var name := "Пусто" if id == "" else Loc.t(str(Data.by_id("items", id).get("name", id)))
+	hotbar_label.text = "Слот %d/12: %s ×%d   [1–0 / колесо]" % [
+		Inventory.selected_hotbar + 1, name, int(slot["count"])]
+	var lines: Array[String] = []
+	for index in Inventory.slots.size():
+		var stored: Dictionary = Inventory.slots[index]
+		if str(stored["id"]) == "":
+			continue
+		var item := Data.by_id("items", str(stored["id"]))
+		lines.append("%02d  %s ×%d" % [index + 1, Loc.t(str(item.get("name", stored["id"]))), int(stored["count"])])
+	inventory_list.text = "\n".join(lines) if not lines.is_empty() else "Рюкзак пуст."

@@ -9,6 +9,8 @@ signal season_changed(season: String)
 signal weather_changed(weather_id: String)
 signal tide_changed(h: float)
 signal item_added(id: String, count: int)
+signal inventory_changed
+signal farm_changed
 signal money_changed(amount: int)
 signal crop_harvested(id: String, quality: int)
 signal fish_caught(id: String, quality: int, size: float)

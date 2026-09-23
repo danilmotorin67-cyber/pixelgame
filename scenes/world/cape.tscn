@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/cape.gd" id="1_cape"]
 [ext_resource type="PackedScene" path="res://scenes/actors/player.tscn" id="2_player"]
@@ -9,6 +9,7 @@
 
 [ext_resource type="PackedScene" path="res://scenes/ui/world_hud.tscn" id="7_hud"]
 [ext_resource type="Script" path="res://scripts/world/region_exit.gd" id="8_exit"]
+[ext_resource type="Script" path="res://scripts/world/garden.gd" id="9_garden"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(1440, 16)
@@ -137,6 +138,10 @@ text = "Сольвик"
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector2(600, 360)
+
+[node name="Garden" type="Node2D" parent="."]
+position = Vector2(672, 304)
+script = ExtResource("9_garden")
 
 [node name="Daylight" type="CanvasModulate" parent="."]
 script = ExtResource("4_daylight")

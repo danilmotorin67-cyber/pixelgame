@@ -65,6 +65,40 @@ theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.87451, 0.913725, 0.917647, 1)
 text = "WASD ходить  E спать у дома  Esc пауза"
 
+[node name="HotbarLabel" type="Label" parent="."]
+offset_left = 4.0
+offset_top = 231.0
+offset_right = 476.0
+offset_bottom = 248.0
+theme_override_font_sizes/font_size = 10
+text = "Слот 1/12: Пусто"
+
+[node name="InventoryPanel" type="Panel" parent="."]
+visible = false
+offset_left = 55.0
+offset_top = 40.0
+offset_right = 425.0
+offset_bottom = 215.0
+
+[node name="InventoryTitle" type="Label" parent="InventoryPanel"]
+offset_left = 12.0
+offset_top = 8.0
+offset_right = 356.0
+offset_bottom = 27.0
+theme_override_font_sizes/font_size = 13
+text = "Рюкзак · Tab закрыть · 1–0 выбрать предмет"
+
+[node name="InventoryScroll" type="ScrollContainer" parent="InventoryPanel"]
+offset_left = 12.0
+offset_top = 30.0
+offset_right = 358.0
+offset_bottom = 162.0
+
+[node name="InventoryList" type="Label" parent="InventoryPanel/InventoryScroll"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Рюкзак пуст."
+
 [node name="MorningPanel" type="Panel" parent="."]
 visible = false
 offset_left = 80.0

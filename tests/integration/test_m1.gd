@@ -64,6 +64,13 @@ func _run() -> void:
 	Game.set_flag("m1_roundtrip", true)
 	Game.add_stat("m1_test_items", 3)
 	Inventory.add("bread_rye", 3, 2)
+	var garden_cell := Vector2i(0, 0)
+	Farm.reset()
+	Inventory.add("seed_turnip", 2)
+	_check(Farm.till(garden_cell), "cannot till the starter garden")
+	_check(Farm.plant(garden_cell, "seed_turnip"), "cannot plant a turnip")
+	_check(Farm.water(garden_cell), "cannot water the starter garden")
+	Inventory.select_hotbar(4)
 	Economy.money = 731
 	var player: Player = cape.get_node("Player")
 	player.global_position = Vector2(612, 401)
@@ -73,6 +80,7 @@ func _run() -> void:
 	var expected_clock := JSON.stringify(Clock.serialize())
 	var expected_weather := JSON.stringify(Weather.serialize())
 	var expected_inventory := Inventory.serialize().duplicate(true)
+	var expected_farm := Farm.serialize().duplicate(true)
 	Game.set_flag("m1_roundtrip", false)
 	Economy.money = 1
 	Clock.set_time(8, 0)
@@ -88,6 +96,8 @@ func _run() -> void:
 	_check(JSON.stringify(Clock.serialize()) == expected_clock, "clock changed after load")
 	_check(JSON.stringify(Weather.serialize()) == expected_weather, "weather changed after load")
 	_check(Inventory.serialize() == expected_inventory, "inventory changed after load")
+	_check(Inventory.selected_hotbar == 4, "selected hotbar slot changed after load")
+	_check(Farm.serialize() == expected_farm, "garden changed after load")
 	_check(Inventory.count_of("bread_rye") == 3, "saved items were lost")
 	_check(Economy.money == 731, "money changed after load")
 
@@ -130,6 +140,14 @@ func _run() -> void:
 		"fainting must restore half energy")
 	_check(Save.has_save(2), "night must create a save")
 	_check(morning_scene.get_node("HUD/MorningPanel").visible, "night report must be shown")
+	_check(int(Farm.get_tile(garden_cell)["days"]) == 1, "watered crop did not grow overnight")
+	for day_offset in 3:
+		Farm.water(garden_cell)
+		Clock.start_next_day()
+		Farm.advance_day()
+	_check(bool(Farm.get_tile(garden_cell)["ready"]), "turnip did not ripen after four watered nights")
+	_check(Farm.harvest(garden_cell) and Inventory.count_of("turnip") == 1,
+		"ripe turnip was not added to inventory")
 
 	for file_path in Save._candidate_paths(2):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(file_path))

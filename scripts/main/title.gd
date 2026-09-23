@@ -15,6 +15,7 @@ func _on_new_game() -> void:
 	Weather.start_day(0)
 	Economy.money = 500
 	Inventory.reset()
+	Farm.reset()
 	Inventory.add("seed_turnip", 15)
 	Inventory.add("bread_rye", 3)
 	Inventory.add("tea", 1)

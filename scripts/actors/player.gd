@@ -48,6 +48,26 @@ func _physics_process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if Clock.paused:
 		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		var code := event.physical_keycode
+		if code >= KEY_1 and code <= KEY_9:
+			Inventory.select_hotbar(code - KEY_1)
+			return
+		if code == KEY_0:
+			Inventory.select_hotbar(9)
+			return
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			Inventory.select_hotbar(Inventory.selected_hotbar - 1)
+			return
+		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			Inventory.select_hotbar(Inventory.selected_hotbar + 1)
+			return
+	if event.is_action_pressed("use_tool") and Router.current_map == "cape":
+		var garden := get_tree().current_scene.get_node_or_null("Garden")
+		if garden and garden.use_at(get_global_mouse_position(), self):
+			get_viewport().set_input_as_handled()
+			return
 	if event.is_action_pressed("dodge") and _dodge_t <= 0.0:
 		_dodge_t = 0.18
 		velocity = facing * dodge_speed

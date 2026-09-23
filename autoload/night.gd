@@ -28,6 +28,7 @@ func end_day(fainted: bool = false) -> void:
 		lost_money = mini(int(floor(float(Economy.money) * 0.1)), 1000)
 		Economy.add(-lost_money)
 	Clock.start_next_day()
+	Farm.advance_day()
 	var state := Game.player_state.duplicate(true)
 	state["energy"] = 270.0 * energy_fraction
 	state["cold"] = 0.0
