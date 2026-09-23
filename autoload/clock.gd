@@ -177,8 +177,8 @@ func tide_rising() -> bool:
 func next_high_tide() -> int:
 	var t := float(minutes) / 60.0
 	var phase := _tide_t0(day_index)
-	var cycles := floor((t - phase) / TIDE_PERIOD_HOURS) + 1.0
-	var peak := phase + cycles * TIDE_PERIOD_HOURS
+	var cycles: float = floorf((t - phase) / TIDE_PERIOD_HOURS) + 1.0
+	var peak: float = phase + cycles * TIDE_PERIOD_HOURS
 	if peak >= 24.0:
 		phase = _tide_t0(day_index + 1)
 		peak = phase + ceil(-phase / TIDE_PERIOD_HOURS) * TIDE_PERIOD_HOURS

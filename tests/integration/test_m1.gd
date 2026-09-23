@@ -22,7 +22,7 @@ func _run() -> void:
 	Game.world_seed = 42
 	Clock.reset()
 	Weather.start_day(0)
-	var cape := load("res://scenes/world/cape.tscn").instantiate()
+	var cape: Node2D = load("res://scenes/world/cape.tscn").instantiate()
 	root.add_child(cape)
 	current_scene = cape
 	await process_frame
