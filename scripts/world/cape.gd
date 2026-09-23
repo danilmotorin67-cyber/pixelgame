@@ -46,7 +46,7 @@ func _ready() -> void:
 		var info: Dictionary = Data.tables.get("regions", {}).get(map_id, {})
 		$HUD/Hint.text = "%s   E: переход" % str(info.get("title", map_id))
 	else:
-		$HUD/Hint.text = "WASD: ходить · E: кровать · ЛКМ: грядка · Tab: вещи"
+		$HUD/Hint.text = "WASD · E: действовать · ЛКМ: грядка · Tab: вещи"
 	_refresh_hud()
 	_refresh_inventory()
 	if not Night.pending_report.is_empty():
