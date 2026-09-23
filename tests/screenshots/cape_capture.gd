@@ -50,4 +50,16 @@ func _capture() -> void:
 	var error := screenshot.save_png("res://saltlight-cape.png")
 	if error != OK:
 		push_error("Could not save game screenshot: %d" % error)
-	get_tree().quit(0 if error == OK else 1)
+	var player: Player = cape.get_node("Player")
+	player.global_position = Vector2(658, 318)
+	player.play_tool("can", Vector2(681, 318))
+	for frame in 40:
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	var action_image := get_viewport().get_texture().get_image()
+	if action_image.get_width() < 1920:
+		action_image.resize(1920, 1080, Image.INTERPOLATE_NEAREST)
+	var action_error := action_image.save_png("res://saltlight-action.png")
+	if action_error != OK:
+		push_error("Could not save farm action screenshot: %d" % action_error)
+	get_tree().quit(0 if error == OK and action_error == OK else 1)

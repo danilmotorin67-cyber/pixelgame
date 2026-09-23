@@ -28,12 +28,14 @@ func use_at(world_position: Vector2, player: Player) -> bool:
 	if selected == "tool_hoe":
 		if Farm.till(cell):
 			player.energy -= 2.0
+			player.play_tool("hoe", to_global(Vector2(cell) * TILE + Vector2(8, 8)))
 			_hint("Земля взрыхлена. Теперь посади семена.")
 		else:
 			_hint("Здесь уже есть грядка.")
 	elif selected == "tool_can":
 		if Farm.water(cell):
 			player.energy -= 2.0
+			player.play_tool("can", to_global(Vector2(cell) * TILE + Vector2(8, 8)))
 			_hint("Грядка полита.")
 		else:
 			_hint("Сначала взрыхли землю или дождись следующего дня.")

@@ -6,6 +6,7 @@ on:
       - tests/screenshots/**
       - scenes/world/cape.tscn
       - scenes/actors/player.tscn
+      - scripts/actors/**
       - assets/sprites/**
       - assets_src/sprites/**
       - scripts/world/cape_ground_art.gd
@@ -42,8 +43,11 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a -s '-screen 0 1920x1080x24' \
             ./godot --path . res://tests/screenshots/cape_capture.tscn
           test -s saltlight-cape.png
+          test -s saltlight-action.png
           file saltlight-cape.png
       - uses: actions/upload-artifact@v4
         with:
           name: saltlight-cape
-          path: saltlight-cape.png
+          path: |
+            saltlight-cape.png
+            saltlight-action.png

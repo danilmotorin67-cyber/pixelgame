@@ -12,8 +12,12 @@ var cold: float = 0.0
 var lantern_on: bool = false
 var _dodge_t: float = 0.0
 var _walk_time: float = 0.0
+var tool_kind: String = ""
+var tool_time: float = 0.0
+const TOOL_DURATION := 0.34
 
 @onready var sprite: Sprite2D = $Body
+@onready var tool_art: Node2D = $ToolArt
 
 
 func _ready() -> void:
@@ -21,15 +25,20 @@ func _ready() -> void:
 		global_position = Router.spawn
 	else:
 		restore_state(Game.player_state)
+	_update_sprite(false)
 
 
 func _physics_process(delta: float) -> void:
 	if Cutscenes.playing or Clock.paused:
 		velocity = Vector2.ZERO
 		return
+	if tool_time > 0.0:
+		tool_time = maxf(0.0, tool_time - delta)
+		tool_art.queue_redraw()
 	if _dodge_t > 0.0:
 		_dodge_t -= delta
 		move_and_slide()
+		_update_sprite(true)
 		return
 	var dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	if dir.length() > 0.1:
@@ -39,10 +48,30 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	if dir.length() > 0.1:
 		_walk_time += delta
-		sprite.frame = int(_walk_time * 5.0) % 2
 	else:
-		sprite.frame = 0
+		_walk_time = 0.0
+	_update_sprite(dir.length() > 0.1)
 	_tint()
+
+
+func _direction_index() -> int:
+	if absf(facing.x) > absf(facing.y):
+		return 1 if facing.x < 0.0 else 2
+	return 3 if facing.y < 0.0 else 0
+
+
+func _update_sprite(moving: bool) -> void:
+	sprite.frame = _direction_index() * 4 + (int(_walk_time * 8.0) % 4 if moving else 0)
+
+
+func play_tool(kind: String, target: Vector2) -> void:
+	var toward := target - global_position
+	if toward.length() > 4.0:
+		facing = toward.normalized()
+	tool_kind = kind
+	tool_time = TOOL_DURATION
+	_update_sprite(false)
+	tool_art.queue_redraw()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -110,4 +139,5 @@ func restore_state(state: Dictionary) -> void:
 	lantern_on = bool(state.get("lantern_on", false))
 	facing = Vector2(float(state.get("face_x", 0)), float(state.get("face_y", 1)))
 	velocity = Vector2.ZERO
+	_update_sprite(false)
 	_tint()
