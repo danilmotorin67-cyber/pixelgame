@@ -76,7 +76,7 @@ func _draw() -> void:
 					paint(at, 6, 8, 3, 3, Color("#fff8e1"))
 					paint(at, 4, 10, 2, 2, Color("#b08f6c"))
 				paint(at, 7, 9 - stage, 2, 4 + stage, Color("#2f4a30"))
-					paint(at, 5 - (stage >> 1), 7 - stage, 3 + (stage >> 1), 2, Color("#4e6e3a"))
+				paint(at, 5 - (stage >> 1), 7 - stage, 3 + (stage >> 1), 2, Color("#4e6e3a"))
 				paint(at, 9, 7 - stage, 2 + stage, 2, Color("#7a964c"))
 				if stage >= 2:
 					paint(at, 6, 4 - stage, 3, 2, Color("#a9b36a"))
