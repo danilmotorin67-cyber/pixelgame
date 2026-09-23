@@ -41,6 +41,12 @@ func _run() -> void:
 	player.tool_time = 0.0
 	player.facing = Vector2.DOWN
 	player._update_sprite(false)
+	var slot_click := InputEventMouseButton.new()
+	slot_click.button_index = MOUSE_BUTTON_LEFT
+	slot_click.pressed = true
+	slot_click.position = Vector2(5 * 25 + 10, 12)
+	cape.get_node("HUD/Hotbar").call("_gui_input", slot_click)
+	_check(Inventory.selected_hotbar == 5, "clicking a hotbar slot must select it")
 	_check(TranslationServer.translate("game.title") == "Солёный свет", "Russian CSV translation is unavailable")
 	TranslationServer.set_locale("en")
 	_check(TranslationServer.translate("game.title") == "Saltlight", "English CSV translation is unavailable")

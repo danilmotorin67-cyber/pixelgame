@@ -13,6 +13,9 @@ on:
       - scripts/world/lighthouse_art.gd
       - scripts/world/house_art.gd
       - scripts/world/garden.gd
+      - scenes/ui/world_hud.tscn
+      - scripts/ui/**
+      - scripts/world/cape.gd
       - .github/workflows/capture-gameplay.yml
   workflow_dispatch:
 

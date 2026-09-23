@@ -7,6 +7,8 @@ extends Node2D
 @onready var tide_label: Label = $HUD/TidePanel/TideLabel
 @onready var weather_label: Label = $HUD/WeatherLabel
 @onready var compass_label: Label = $HUD/Compass/CompassLabel
+@onready var compass_hud: CompassHud = $HUD/Compass
+@onready var money_label: Label = $HUD/MoneyLabel
 @onready var hotbar_label: Label = $HUD/HotbarLabel
 @onready var inventory_panel: Panel = $HUD/InventoryPanel
 @onready var inventory_list: Label = $HUD/InventoryPanel/InventoryScroll/InventoryList
@@ -44,7 +46,7 @@ func _ready() -> void:
 		var info: Dictionary = Data.tables.get("regions", {}).get(map_id, {})
 		$HUD/Hint.text = "%s   E: переход" % str(info.get("title", map_id))
 	else:
-		$HUD/Hint.text = "WASD: ходить  E: кровать  Tab: вещи  ЛКМ: грядка"
+		$HUD/Hint.text = "WASD: ходить · E: кровать · ЛКМ: грядка · Tab: вещи"
 	_refresh_hud()
 	_refresh_inventory()
 	if not Night.pending_report.is_empty():
@@ -134,19 +136,20 @@ func _refresh_hud() -> void:
 		"↑" if Clock.tide_rising() else "↓", Clock.tide_height(),
 		peak / 60, peak % 60]
 	weather_label.text = "%s · %s" % [WEATHER_NAMES.get(Weather.current, ""), Clock.moon_name()]
-	compass_label.text = "Свет %d  Покой %d  Море %d   %d кр" % [
+	compass_label.text = "Свет %d     Покой %d     Море %d" % [
 		int(Lighthouse.fire_power),
 		int(Graveyard.peace),
 		int(Sea.mercy),
-		Economy.money,
 	]
+	compass_hud.set_values(Lighthouse.fire_power, Graveyard.peace, Sea.mercy)
+	money_label.text = "  %d кр" % Economy.money
 
 
 func _refresh_inventory() -> void:
 	var slot: Dictionary = Inventory.slots[Inventory.selected_hotbar]
 	var id := str(slot["id"])
 	var name := "Пусто" if id == "" else Loc.t(str(Data.by_id("items", id).get("name", id)))
-	hotbar_label.text = "Слот %d/12: %s ×%d   [1–0 / колесо]" % [
+	hotbar_label.text = "%d / 12   ·   %s ×%d" % [
 		Inventory.selected_hotbar + 1, name, int(slot["count"])]
 	var lines: Array[String] = []
 	for index in Inventory.slots.size():
