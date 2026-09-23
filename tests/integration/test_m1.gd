@@ -74,9 +74,14 @@ func _run() -> void:
 	await tree.process_frame
 	var first_shore_tile: CollisionShape2D = cape.get_node("TideShore/TideCollision").get_child(0)
 	_check(not first_shore_tile.disabled, "high tide must block shore tile")
+	var shore_cells: Array = cape.get_node("TideShore").get("_cells")
+	_check(bool(shore_cells[0]["flooded"]) and bool(shore_cells[5 * 90]["flooded"]),
+		"high tide must render the coast as water")
 	Clock.set_time(int(low_minute / 60), low_minute % 60)
 	await tree.process_frame
 	_check(first_shore_tile.disabled, "low tide must unblock shore tile")
+	_check(not bool(shore_cells[0]["flooded"]) and not bool(shore_cells[5 * 90]["flooded"]),
+		"low tide must expose the walkable coast")
 	_check(Weather.weather_for_day(0) == "clear" and Weather.weather_for_day(2) == "clear",
 		"first three days must be clear")
 

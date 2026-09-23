@@ -6,13 +6,18 @@ const TILE := 16
 const FIRST_ROW := 54
 const ROWS := 6
 const COLUMNS := 90
-const WATER := Color("#24465b")
-const FOAM := Color("#a7bbad")
-const WET_SAND := Color("#806c58")
-const DRY_SAND := Color("#9b8970")
+const DEEP := Color("#1b2b3c")
+const WATER := Color("#24405a")
+const WAVE := Color("#2f5a76")
+const SHALLOW := Color("#3f7f8f")
+const FOAM := Color("#cfe6e2")
+const WET_SAND := Color("#8c6a4e")
+const DRY_SAND := Color("#d8c49a")
 
 var _cells: Array[Dictionary] = []
 var _body: StaticBody2D
+var _wave_seconds := 0.0
+var _wave_frame := 0
 
 
 func _ready() -> void:
@@ -37,6 +42,14 @@ func _ready() -> void:
 	_on_tide_changed(Clock.tide_height())
 
 
+func _process(delta: float) -> void:
+	_wave_seconds += delta
+	if _wave_seconds >= 0.22:
+		_wave_seconds = fmod(_wave_seconds, 0.22)
+		_wave_frame = (_wave_frame + 1) % 4
+		queue_redraw()
+
+
 func _on_tide_changed(height: float) -> void:
 	for cell in _cells:
 		var flooded: bool = height >= float(cell["z"])
@@ -49,15 +62,64 @@ func _on_tide_changed(height: float) -> void:
 
 
 func _draw() -> void:
+	# The permanent sea continues seamlessly from the changing tidal cells.
+	draw_rect(Rect2(0, 960, 1440, 160), DEEP)
+	for row in range(10):
+		for column in range(COLUMNS):
+			var sx := column * TILE
+			var sy := 960 + row * TILE
+			if (column * 7 + row * 11) % 4 == 0:
+				_px(sx + 1, sy + 3, 14, 6, WATER)
+			if (column * 13 + row * 5 + _wave_frame) % 7 == 0:
+				_px(sx + 4, sy + 5, 9, 1, WAVE)
+				_px(sx + 7, sy + 6, 4, 1, SHALLOW)
+
 	for cell in _cells:
 		var x: int = cell["x"]
 		var y: int = cell["y"]
-		var rect := Rect2(x, y, TILE, TILE)
+		var column := x / TILE
+		var row := (y / TILE) - FIRST_ROW
+		var seed: int = column * 17 + row * 31
 		if cell["flooded"]:
-			draw_rect(rect, WATER)
-			if (x / TILE + y / TILE) % 5 == 0:
-				draw_rect(Rect2(x, y, 6, 1), FOAM)
+			_px(x, y, TILE, TILE, WATER)
+			_px(x + 1, y + 10, 13, 4, WAVE)
+			_px(x + 4, y + 11, 7, 1, SHALLOW)
+			if (seed + _wave_frame) % 3 == 0:
+				_px(x + 2, y + 5, 9, 1, SHALLOW)
+				_px(x + 5, y + 6, 5, 1, FOAM)
+			if row == 0 or not _cells[(row - 1) * COLUMNS + column]["flooded"]:
+				_foam_edge(x, y, seed)
 		else:
-			draw_rect(rect, WET_SAND if cell["wet"] else DRY_SAND)
-			if (x / TILE * 13 + y / TILE * 7) % 11 == 0:
-				draw_rect(Rect2(x + 3, y + 8, 2, 1), WET_SAND)
+			var wet: bool = cell["wet"]
+			_px(x, y, TILE, TILE, WET_SAND if wet else DRY_SAND)
+			_px(x + 1, y + 2, 8, 1, Color("#b08f6c") if wet else Color("#eadcb8"))
+			_px(x + 8, y + 7, 7, 1, Color("#6b4a33") if wet else WET_SAND)
+			if seed % 3 == 0:
+				_px(x + 3, y + 11, 4, 2, Color("#6c6e76"))
+				_px(x + 3, y + 10, 2, 1, Color("#c9c8c2"))
+			if row >= 3 and not wet and seed % 5 == 0:
+				_px(x + 3, y + 6, 9, 5, WAVE)
+				_px(x + 5, y + 7, 4, 1, SHALLOW)
+			if row == ROWS - 1:
+				_foam_edge(x, y + 14, seed)
+
+	# A broken basalt lip separates the grass from the exposed shore.
+	for column in COLUMNS:
+		var x := column * TILE
+		var seed := (column * 17) % 11
+		_px(x, 856 + seed % 3, 16, 4, Color("#45464e"))
+		_px(x + 2, 854 + seed % 3, 9, 3, Color("#6c6e76"))
+		if seed % 4 == 0:
+			_px(x + 5, 858, 6, 3, Color("#c9c8c2"))
+
+
+func _foam_edge(x: int, y: int, seed: int) -> void:
+	_px(x, y, 16, 2, SHALLOW)
+	_px(x + 1, y, 9 + seed % 6, 1, FOAM)
+	_px(x + 3 + seed % 3, y + 2, 4, 1, FOAM)
+	if seed % 4 == 0:
+		_px(x + 11, y + 3, 2, 1, FOAM)
+
+
+func _px(x: int, y: int, w: int, h: int, color: Color) -> void:
+	draw_rect(Rect2(x, y, w, h), color)

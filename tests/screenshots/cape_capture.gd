@@ -39,17 +39,7 @@ func _capture() -> void:
 	Clock.paused = true
 	for frame in 30:
 		await get_tree().process_frame
-	await RenderingServer.frame_post_draw
-	var screenshot := get_viewport().get_texture().get_image()
-	if screenshot.is_empty():
-		push_error("Godot did not render the screenshot")
-		get_tree().quit(1)
-		return
-	if screenshot.get_width() < 1920:
-		screenshot.resize(1920, 1080, Image.INTERPOLATE_NEAREST)
-	var error := screenshot.save_png("res://saltlight-cape.png")
-	if error != OK:
-		push_error("Could not save game screenshot: %d" % error)
+	var success: bool = await _save_frame("saltlight-cape.png")
 	var player: Player = cape.get_node("Player")
 	player.global_position = Vector2(658, 318)
 	player.play_tool("can", Vector2(681, 318))
@@ -57,11 +47,34 @@ func _capture() -> void:
 	player.tool_art.queue_redraw()
 	for frame in 40:
 		await get_tree().process_frame
+	success = (await _save_frame("saltlight-action.png")) and success
+
+	# The same coast from the same camera position at spring low and high tide.
+	player.global_position = Vector2(720, 844)
+	player.tool_time = 0.0
+	player.get_node("Camera2D").position = Vector2(0, 51)
+	Inventory.select_hotbar(0)
+	Clock.day_index = 0
+	Clock.set_time(15, 15)
+	for frame in 40:
+		await get_tree().process_frame
+	success = (await _save_frame("saltlight-shore-low.png")) and success
+	Clock.set_time(9, 2)
+	for frame in 10:
+		await get_tree().process_frame
+	success = (await _save_frame("saltlight-shore-high.png")) and success
+	get_tree().quit(0 if success else 1)
+
+
+func _save_frame(filename: String) -> bool:
 	await RenderingServer.frame_post_draw
-	var action_image := get_viewport().get_texture().get_image()
-	if action_image.get_width() < 1920:
-		action_image.resize(1920, 1080, Image.INTERPOLATE_NEAREST)
-	var action_error := action_image.save_png("res://saltlight-action.png")
-	if action_error != OK:
-		push_error("Could not save farm action screenshot: %d" % action_error)
-	get_tree().quit(0 if error == OK and action_error == OK else 1)
+	var screenshot := get_viewport().get_texture().get_image()
+	if screenshot.is_empty():
+		push_error("Godot did not render %s" % filename)
+		return false
+	if screenshot.get_width() < 1920:
+		screenshot.resize(1920, 1080, Image.INTERPOLATE_NEAREST)
+	var error := screenshot.save_png("res://" + filename)
+	if error != OK:
+		push_error("Could not save %s: %d" % [filename, error])
+	return error == OK

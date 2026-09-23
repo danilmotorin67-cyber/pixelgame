@@ -16,6 +16,7 @@ on:
       - scenes/ui/world_hud.tscn
       - scripts/ui/**
       - scripts/world/cape.gd
+      - scripts/world/tide_shore.gd
       - .github/workflows/capture-gameplay.yml
   workflow_dispatch:
 
@@ -47,6 +48,8 @@ jobs:
             ./godot --path . res://tests/screenshots/cape_capture.tscn
           test -s saltlight-cape.png
           test -s saltlight-action.png
+          test -s saltlight-shore-low.png
+          test -s saltlight-shore-high.png
           file saltlight-cape.png
       - uses: actions/upload-artifact@v4
         with:
@@ -54,3 +57,5 @@ jobs:
           path: |
             saltlight-cape.png
             saltlight-action.png
+            saltlight-shore-low.png
+            saltlight-shore-high.png
