@@ -4,6 +4,11 @@ on:
   push:
     paths:
       - tests/screenshots/**
+      - scenes/world/cape.tscn
+      - scripts/world/cape_ground_art.gd
+      - scripts/world/lighthouse_art.gd
+      - scripts/world/house_art.gd
+      - scripts/world/garden.gd
       - .github/workflows/capture-gameplay.yml
   workflow_dispatch:
 

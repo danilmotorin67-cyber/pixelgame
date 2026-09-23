@@ -16,7 +16,7 @@ func _capture() -> void:
 	Inventory.add("tool_hoe")
 	Inventory.add("tool_can")
 	Router.current_map = "cape"
-	Router.spawn = Vector2(682, 272)
+	Router.spawn = Vector2(682, 245)
 	for x in 7:
 		for y in 4:
 			var cell := Vector2i(x, y)

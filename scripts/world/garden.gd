@@ -56,13 +56,31 @@ func _draw() -> void:
 			var cell := Vector2i(x, y)
 			var plot := Farm.get_tile(cell)
 			var at := Vector2(cell) * TILE
-			draw_rect(Rect2(at, Vector2(TILE - 1, TILE - 1)),
-				Color("#735e47") if plot.is_empty() else
-				(Color("#443b31") if bool(plot["watered"]) else Color("#594633")))
+			# Raised bed, furrows and damp glints remain visible around a crop.
+			paint(at, 0, 0, 16, 16, Color("#2f4a30"))
+			paint(at, 1, 2, 14, 12, Color("#6b4a33"))
+			paint(at, 2, 2, 12, 2, Color("#b08f6c"))
+			paint(at, 2, 12, 12, 2, Color("#4a3428"))
+			paint(at, 2, 5, 12, 6, Color("#8c6a4e") if plot.is_empty() else
+				(Color("#4a3428") if bool(plot["watered"]) else Color("#6b4a33")))
+			paint(at, 3, 8, 3, 1, Color("#b08f6c") if plot.is_empty() else Color("#8c6a4e"))
+			paint(at, 10, 6, 2, 1, Color("#b08f6c") if plot.is_empty() else Color("#8c6a4e"))
+			if not plot.is_empty() and bool(plot["watered"]):
+				paint(at, 3, 10, 3, 1, Color("#3f7f8f"))
 			if plot.is_empty():
 				continue
 			if str(plot["crop"]) != "":
-				var height := mini(3 + int(plot["days"]) * 2, 10)
-				draw_rect(Rect2(at + Vector2(6, 12 - height), Vector2(4, height)), Color("#81ab52"))
+				var stage := mini(int(plot["days"]), 3)
 				if bool(plot["ready"]):
-					draw_rect(Rect2(at + Vector2(4, 8), Vector2(8, 5)), Color("#d9bf98"))
+					paint(at, 5, 8, 6, 5, Color("#eadcb8"))
+					paint(at, 6, 8, 3, 3, Color("#fff8e1"))
+					paint(at, 4, 10, 2, 2, Color("#b08f6c"))
+				paint(at, 7, 9 - stage, 2, 4 + stage, Color("#2f4a30"))
+					paint(at, 5 - (stage >> 1), 7 - stage, 3 + (stage >> 1), 2, Color("#4e6e3a"))
+				paint(at, 9, 7 - stage, 2 + stage, 2, Color("#7a964c"))
+				if stage >= 2:
+					paint(at, 6, 4 - stage, 3, 2, Color("#a9b36a"))
+
+
+func paint(at: Vector2, x: int, y: int, w: int, h: int, color: Color) -> void:
+	draw_rect(Rect2(at + Vector2(x, y), Vector2(w, h)), color)
