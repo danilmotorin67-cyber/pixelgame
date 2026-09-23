@@ -74,7 +74,6 @@ func save_game(slot: int = -1) -> bool:
 		"weather": Weather.serialize(),
 		"router": Router.serialize(),
 		"inventory": Inventory.serialize(),
-		"farm": Farm.serialize(),
 		"economy": Economy.serialize(),
 		"skills": Skills.serialize(),
 		"knowledge": Knowledge.serialize(),
@@ -132,7 +131,6 @@ func load_game(slot: int) -> bool:
 	Weather.deserialize(payload.get("weather", {}))
 	Router.deserialize(payload.get("router", {}))
 	Inventory.deserialize(payload.get("inventory", {}))
-	Farm.deserialize(payload.get("farm", {}))
 	Economy.deserialize(payload.get("economy", {}))
 	Skills.deserialize(payload.get("skills", {}))
 	Knowledge.deserialize(payload.get("knowledge", {}))

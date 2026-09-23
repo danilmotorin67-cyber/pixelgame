@@ -49,7 +49,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if Clock.paused:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
-		var code := event.physical_keycode
+		var code: int = event.physical_keycode
 		if code >= KEY_1 and code <= KEY_9:
 			Inventory.select_hotbar(code - KEY_1)
 			return
