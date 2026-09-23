@@ -1,0 +1,14 @@
+[
+  {
+    "name": "hero_idle_down",
+    "file": "assets/sprites/hero_idle_down.png",
+    "meta": {
+      "name": "hero_idle_down",
+      "size": "16x32",
+      "frames": "2",
+      "fps": "4",
+      "origin": "8,31",
+      "palette": "saltlight48"
+    }
+  }
+]
