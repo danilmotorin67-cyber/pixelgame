@@ -1,5 +1,7 @@
 extends Node2D
 
+const FuelShopScript = preload("res://scripts/objects/fuel_shop.gd")
+
 const TILE := 16
 const GRASS := Color("#566c4e")
 const MEADOW := Color("#708354")
@@ -115,6 +117,27 @@ func _build_landmarks() -> void:
 			_add_wall(Vector2((float(pos[0]) + float(dimensions[0]) / 2.0) * TILE,
 				(float(pos[1]) + float(dimensions[1]) / 2.0) * TILE),
 				Vector2(int(dimensions[0]) * TILE, int(dimensions[1]) * TILE))
+		if biome == "village" and str(item["title"]) == "Лавка Бергов":
+			var shop := Area2D.new()
+			shop.name = "FuelShop"
+			shop.position = Vector2((float(pos[0]) + float(dimensions[0]) / 2.0) * TILE,
+				(float(pos[1]) + float(dimensions[1])) * TILE + 8.0)
+			shop.collision_layer = 8
+			shop.collision_mask = 0
+			shop.set_script(FuelShopScript)
+			var collision := CollisionShape2D.new()
+			var shape := RectangleShape2D.new()
+			shape.size = Vector2(36, 20)
+			collision.shape = shape
+			shop.add_child(collision)
+			var sign := Label.new()
+			sign.name = "FuelSign"
+			sign.text = "E · рыбий жир 40 кр"
+			sign.position = Vector2(-56, 13)
+			sign.z_index = 2
+			sign.add_theme_font_size_override("font_size", 8)
+			shop.add_child(sign)
+			add_child(shop)
 	if biome == "birch":
 		# A narrow plank crossing at y=20 keeps both sides of the grove connected.
 		_add_wall(Vector2(14 * TILE, 9 * TILE), Vector2(5 * TILE, 18 * TILE))

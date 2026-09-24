@@ -167,6 +167,18 @@ func _run() -> void:
 		"village return portal is missing")
 	_check(tree.current_scene.get_node("Player").global_position == Vector2(1224, 488),
 		"player arrived at wrong village entrance")
+	var fuel_shop: Area2D = tree.current_scene.get_node("Terrain/FuelShop")
+	_check(fuel_shop.collision_layer == 8, "the village oil counter cannot be reached")
+	var oil_before := Inventory.count_of("fish_oil")
+	var money_before := Economy.money
+	fuel_shop.call("interact", tree.current_scene.get_node("Player"))
+	_check(Inventory.count_of("fish_oil") == oil_before + 1 and Economy.money == money_before - 40,
+		"buying oil must add one nightly portion and charge 40 crowns")
+	Clock.day_index = 2
+	fuel_shop.call("interact", tree.current_scene.get_node("Player"))
+	_check(Inventory.count_of("fish_oil") == oil_before + 1 and Economy.money == money_before - 40,
+		"the Bergs' shop must be closed on Wednesdays")
+	Clock.day_index = 0
 	_check(Router.goto_map("moor", Vector2(568, 904)), "village to moor failed")
 	await tree.process_frame
 	_check(tree.current_scene.get("map_id") == "moor", "moor scene did not load")
