@@ -118,10 +118,11 @@ func _build_landmarks() -> void:
 				(float(pos[1]) + float(dimensions[1]) / 2.0) * TILE),
 				Vector2(int(dimensions[0]) * TILE, int(dimensions[1]) * TILE))
 		if biome == "village" and str(item["title"]) == "Лавка Бергов":
+			var shop_size: Array = item["size"]
 			var shop := Area2D.new()
 			shop.name = "FuelShop"
-			shop.position = Vector2((float(pos[0]) + float(dimensions[0]) / 2.0) * TILE,
-				(float(pos[1]) + float(dimensions[1])) * TILE + 8.0)
+			shop.position = Vector2((float(pos[0]) + float(shop_size[0]) / 2.0) * TILE,
+				(float(pos[1]) + float(shop_size[1])) * TILE + 8.0)
 			shop.collision_layer = 8
 			shop.collision_mask = 0
 			shop.set_script(FuelShopScript)
