@@ -51,6 +51,12 @@ func _physics_process(delta: float) -> void:
 	else:
 		_walk_time = 0.0
 	_update_sprite(dir.length() > 0.1)
+	if Router.current_map == "cape":
+		# Keep the lantern visible while the keeper works at the tower door.
+		var camera: Camera2D = $Camera2D
+		var near_tower := global_position.distance_to(Vector2(724, 264)) < 92.0
+		camera.position.y = lerpf(camera.position.y, -55.0 if near_tower else 0.0,
+			clampf(delta * 5.0, 0.0, 1.0))
 	_tint()
 
 

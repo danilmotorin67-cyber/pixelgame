@@ -55,6 +55,7 @@ func _capture() -> void:
 	Clock.set_time(21, 20)
 	Lighthouse.light_lamp()
 	player.global_position = Vector2(706, 270)
+	player.get_node("Camera2D").position = Vector2(0, -55)
 	player.tool_time = 0.0
 	player.tool_art.queue_redraw()
 	for frame in 40:
