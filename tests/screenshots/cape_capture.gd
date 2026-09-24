@@ -48,6 +48,18 @@ func _capture() -> void:
 	for frame in 40:
 		await get_tree().process_frame
 	success = (await _save_frame("saltlight-action.png")) and success
+	# A live evening view with the keeper's first portion of fuel burning.
+	Lighthouse.reset()
+	Inventory.add("fish_oil", 1)
+	Lighthouse.refill()
+	Clock.set_time(21, 20)
+	Lighthouse.light_lamp()
+	player.global_position = Vector2(706, 270)
+	player.tool_time = 0.0
+	player.tool_art.queue_redraw()
+	for frame in 40:
+		await get_tree().process_frame
+	success = (await _save_frame("saltlight-lighthouse.png")) and success
 
 	# The same coast from the same camera position at spring low and high tide.
 	player.global_position = Vector2(720, 844)
@@ -56,6 +68,7 @@ func _capture() -> void:
 	player.get_node("Camera2D").position = Vector2(0, 51)
 	Inventory.select_hotbar(0)
 	Clock.day_index = 0
+	Lighthouse.reset()
 	Clock.set_time(15, 15)
 	for frame in 40:
 		await get_tree().process_frame

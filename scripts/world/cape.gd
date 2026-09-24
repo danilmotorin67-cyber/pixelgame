@@ -38,6 +38,7 @@ func _ready() -> void:
 	Events.money_changed.connect(_on_world_changed)
 	Events.inventory_changed.connect(_refresh_inventory)
 	Events.night_resolved.connect(_on_night_resolved)
+	Events.lamp_lit.connect(_on_world_changed)
 	console.visible = false
 	console_out.visible = false
 	inventory_panel.visible = false
@@ -46,7 +47,7 @@ func _ready() -> void:
 		var info: Dictionary = Data.tables.get("regions", {}).get(map_id, {})
 		$HUD/Hint.text = "%s   E: переход" % str(info.get("title", map_id))
 	else:
-		$HUD/Hint.text = "WASD · E: действовать · ЛКМ: грядка · Tab: вещи"
+		$HUD/Hint.text = "Маяк: E у двери — заправить, удержать — зажечь"
 	_refresh_hud()
 	_refresh_inventory()
 	if not Night.pending_report.is_empty():
@@ -106,9 +107,12 @@ func _on_night_resolved(report: Dictionary) -> void:
 	var reason := "Вы потеряли сознание." if report["fainted"] else "Ночь прошла спокойно."
 	var loss := "\nПотеряно: %d кр." % report["money_lost"] if report["money_lost"] > 0 else ""
 	var save_line := "Игра сохранена." if report["saved"] else "Ошибка сохранения."
-	morning_text.text = "Утро, %s %d. %s\n%s%s\n%s" % [
+	var light: Dictionary = report.get("lighthouse", {})
+	var light_line := "\nМаяк: %d · Свет: %d" % [
+		int(round(float(light.get("power", 0.0)))), int(round(float(light.get("light", 0.0))))]
+	morning_text.text = "Утро, %s %d. %s\n%s%s%s\n%s" % [
 		report["season"], report["day"], WEATHER_NAMES.get(report["weather"], ""),
-		reason, loss, save_line]
+		reason, loss, light_line, save_line]
 	morning_panel.visible = true
 	Clock.paused = true
 	_refresh_hud()

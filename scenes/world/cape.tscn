@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/cape.gd" id="1_cape"]
 [ext_resource type="PackedScene" path="res://scenes/actors/player.tscn" id="2_player"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://scripts/world/cape_ground_art.gd" id="10_ground_art"]
 [ext_resource type="Script" path="res://scripts/world/lighthouse_art.gd" id="11_lighthouse_art"]
 [ext_resource type="Script" path="res://scripts/world/house_art.gd" id="12_house_art"]
+[ext_resource type="Script" path="res://scripts/objects/lighthouse_station.gd" id="13_station"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(1440, 16)
@@ -22,6 +23,9 @@ size = Vector2(1440, 160)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bed"]
 size = Vector2(28, 18)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lighthouse"]
+size = Vector2(26, 20)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_side"]
 size = Vector2(16, 1120)
@@ -64,6 +68,15 @@ script = ExtResource("3_shore")
 [node name="Lighthouse" type="Node2D" parent="."]
 position = Vector2(724, 264)
 script = ExtResource("11_lighthouse_art")
+
+[node name="LighthouseStation" type="Area2D" parent="."]
+position = Vector2(724, 255)
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("13_station")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LighthouseStation"]
+shape = SubResource("RectangleShape2D_lighthouse")
 
 [node name="LighthouseStripe" type="ColorRect" parent="."]
 visible = false

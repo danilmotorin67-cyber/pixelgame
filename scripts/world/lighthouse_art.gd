@@ -8,6 +8,19 @@ const RED := Color("#9b2f2a")
 const RED_LIGHT := Color("#c2412d")
 
 
+func _ready() -> void:
+	Events.lamp_lit.connect(_on_lamp_lit)
+	Events.day_started.connect(_on_day_started)
+
+
+func _on_lamp_lit(_on_time: bool) -> void:
+	queue_redraw()
+
+
+func _on_day_started(_day_index: int) -> void:
+	queue_redraw()
+
+
 func _draw() -> void:
 	# Footprint x -24..24, top -144; the bottom position drives Y sorting.
 	_px(-29, -4, 58, 5, Color("#2f4a30"))
@@ -40,9 +53,9 @@ func _draw() -> void:
 	_px(-24, -126, 48, 4, STONE)
 	_px(-19, -142, 38, 18, OUTLINE)
 	_px(-17, -140, 34, 15, Color("#24405a"))
-	_px(-14, -138, 28, 11, Color("#ffc85a"))
-	_px(-11, -137, 19, 7, Color("#ffe9a8"))
-	_px(-1, -137, 4, 6, Color("#fff8e1"))
+	_px(-14, -138, 28, 11, Color("#ffc85a") if Lighthouse.lamp_on else Color("#3b5668"))
+	_px(-11, -137, 19, 7, Color("#ffe9a8") if Lighthouse.lamp_on else Color("#517285"))
+	_px(-1, -137, 4, 6, Color("#fff8e1") if Lighthouse.lamp_on else Color("#7d9aa1"))
 	for x in [-17, -7, 13]:
 		_px(x, -141, 3, 18, OUTLINE)
 	_px(-26, -146, 52, 5, OUTLINE)

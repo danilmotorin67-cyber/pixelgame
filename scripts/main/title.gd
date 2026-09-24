@@ -16,6 +16,8 @@ func _on_new_game() -> void:
 	Economy.money = 500
 	Inventory.reset()
 	Farm.reset()
+	Lighthouse.reset()
+	Inventory.add("fish_oil", 1)
 	Inventory.add("seed_turnip", 15)
 	Inventory.add("bread_rye", 3)
 	Inventory.add("tea", 1)

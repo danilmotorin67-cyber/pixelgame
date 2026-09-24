@@ -20,6 +20,7 @@ func _run() -> void:
 	Save.save_root = TEST_SAVE_ROOT
 	Save.current_slot = 2
 	Game.reset()
+	Lighthouse.reset()
 	Game.world_seed = 42
 	Clock.reset()
 	Weather.start_day(0)
@@ -84,6 +85,29 @@ func _run() -> void:
 		"low tide must expose the walkable coast")
 	_check(Weather.weather_for_day(0) == "clear" and Weather.weather_for_day(2) == "clear",
 		"first three days must be clear")
+	var station: Area2D = cape.get_node("LighthouseStation")
+	_check(station.collision_layer == 8 and station.has_method("interact"),
+		"keeper cannot interact with lighthouse door")
+	_check(not Lighthouse.refill() and not Lighthouse.light_lamp(),
+		"empty reservoir must not light without fish oil")
+	Inventory.add("fish_oil", 1)
+	_check(Lighthouse.refill() and Inventory.count_of("fish_oil") == 0,
+		"refilling must consume exactly one portion of fish oil")
+	_check(not Lighthouse.refill(), "full reservoir must reject a second portion")
+	Clock.set_time(19, 30)
+	_check(Lighthouse.light_lamp() and Lighthouse.lamp_on and Lighthouse.current_power > 0.0,
+		"lighthouse must light after refilling")
+	_check(not Lighthouse.light_lamp(), "already lit lamp must not light twice")
+	var first_light := Lighthouse.resolve_night()
+	_check(int(first_light["power"]) == 35 and Lighthouse.fuel == 0.0 and not Lighthouse.lamp_on,
+		"lit night must score and consume one reservoir")
+	var dark_night := Lighthouse.resolve_night()
+	_check(int(dark_night["power"]) == 0 and is_equal_approx(Lighthouse.fire_power, 17.5),
+		"unlit night must count as zero in the seven-night Light average")
+	Weather.set_weather("storm")
+	_check(is_equal_approx(float(station.call("hold_seconds")), 4.0), "storm must double the ignition hold")
+	Weather.set_weather("clear")
+	Lighthouse.reset()
 
 	Game.set_flag("m1_roundtrip", true)
 	Game.add_stat("m1_test_items", 3)
@@ -98,16 +122,20 @@ func _run() -> void:
 	Economy.money = 731
 	player.global_position = Vector2(612, 401)
 	Clock.set_time(19, 40)
+	Inventory.add("fish_oil", 1)
+	_check(Lighthouse.refill() and Lighthouse.light_lamp(), "cannot prepare lit save")
 	_check(Save.save_game(2), "save failed")
 	var expected_game := Game.serialize().duplicate(true)
 	var expected_clock := JSON.stringify(Clock.serialize())
 	var expected_weather := JSON.stringify(Weather.serialize())
 	var expected_inventory := Inventory.serialize().duplicate(true)
 	var expected_farm := Farm.serialize().duplicate(true)
+	var expected_lighthouse := Lighthouse.serialize().duplicate(true)
 	Game.set_flag("m1_roundtrip", false)
 	Economy.money = 1
 	Clock.set_time(8, 0)
 	Weather.set_weather("storm")
+	Lighthouse.reset()
 	_check(Save.load_game(2), "load failed")
 	if JSON.stringify(Game.serialize()) != JSON.stringify(expected_game):
 		print("Game before load: ", JSON.stringify(expected_game))
@@ -122,6 +150,7 @@ func _run() -> void:
 	_check(Inventory.serialize() == expected_inventory, "inventory changed after load")
 	_check(Inventory.selected_hotbar == 4, "selected hotbar slot changed after load")
 	_check(Farm.serialize() == expected_farm, "garden changed after load")
+	_check(Lighthouse.serialize() == expected_lighthouse, "lit lamp and fuel changed after load")
 	_check(Inventory.count_of("bread_rye") == 3, "saved items were lost")
 	_check(Economy.money == 731, "money changed after load")
 
@@ -164,6 +193,10 @@ func _run() -> void:
 		"fainting must restore half energy")
 	_check(Save.has_save(2), "night must create a save")
 	_check(morning_scene.get_node("HUD/MorningPanel").visible, "night report must be shown")
+	_check(int(Lighthouse.last_report.get("power", 0)) == 35 and Lighthouse.fuel == 0.0,
+		"night resolution must record the lamp score and burn its fuel")
+	_check(morning_scene.get_node("HUD/MorningPanel/MorningText").text.contains("Маяк: 35"),
+		"morning report must show the lighthouse score")
 	_check(int(Farm.get_tile(garden_cell)["days"]) == 1, "watered crop did not grow overnight")
 	for day_offset in 3:
 		Farm.water(garden_cell)

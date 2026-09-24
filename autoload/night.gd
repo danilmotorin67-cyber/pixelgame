@@ -27,6 +27,7 @@ func end_day(fainted: bool = false) -> void:
 	if fainted:
 		lost_money = mini(int(floor(float(Economy.money) * 0.1)), 1000)
 		Economy.add(-lost_money)
+	var light_report := Lighthouse.resolve_night()
 	Clock.start_next_day()
 	Farm.advance_day()
 	var state := Game.player_state.duplicate(true)
@@ -45,6 +46,7 @@ func end_day(fainted: bool = false) -> void:
 		"day": Clock.day, "season": Clock.season, "weather": Weather.current,
 		"tide": Clock.tide_height(), "moon": Clock.moon_name(),
 		"money_lost": lost_money, "fainted": fainted, "saved": saved,
+		"lighthouse": light_report,
 	}
 	if current_scene and current_scene.get("map_id") != "cape":
 		pending_report = report

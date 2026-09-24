@@ -5,6 +5,8 @@ on:
     paths:
       - tests/screenshots/**
       - scenes/world/cape.tscn
+      - autoload/lighthouse.gd
+      - scripts/objects/lighthouse_station.gd
       - scenes/actors/player.tscn
       - scripts/actors/**
       - assets/sprites/**
@@ -50,6 +52,7 @@ jobs:
           test -s saltlight-action.png
           test -s saltlight-shore-low.png
           test -s saltlight-shore-high.png
+          test -s saltlight-lighthouse.png
           file saltlight-cape.png
       - uses: actions/upload-artifact@v4
         with:
@@ -59,3 +62,4 @@ jobs:
             saltlight-action.png
             saltlight-shore-low.png
             saltlight-shore-high.png
+            saltlight-lighthouse.png
